@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_API_BASE=http://api:5000
+    depends_on:
+      - api
+
+  api:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URI=sqlite:////data/frp.db
+    volumes:
+      - ./data:/data
+
+  frp:
+    image: snowdreamtech/frps:0.52
+    ports:
+      - "7000-7020:7000-7020"
+      - "7400:7400"
+    volumes:
+      - ./frps.ini:/etc/frp/frps.ini
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus.yml:/etc/prometheus/prometheus.yml
